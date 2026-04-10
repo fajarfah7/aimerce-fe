@@ -11,21 +11,78 @@ import {
 import { ArrowUpIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Product } from "@/app/api/product/detail/dto";
+import { ChatMessageRequest, ChatMessageResponse } from "@/app/api/product/chat/dto";
+import { SendChatMessage } from "@/app/api/product/chat/chat";
 
 type ProductProps = {
-  product: Product;
+  storeSlug: string;
+  productSlug: string;
 };
 
-export function ChatProduct({ product }: ProductProps) {
+export function ChatProduct({ storeSlug, productSlug }: ProductProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const [chatMessages, setChatMessage] = useState<string>("");
+  const [chatMessages, setChatMessages] = useState<ChatMessageResponse[]>([]);
+  const [message, setMessage] = useState<string>("");
+
+  const handleChat = () => {
+    const send = async () => {
+      const payload: ChatMessageRequest = {
+        message: message,
+        storeSlug: storeSlug,
+        productSlug: productSlug,
+      };
+
+      const res = await SendChatMessage(payload);
+      if (!res) return;
+      if (!res.body) return;
+
+      const reader = res.body.getReader();
+      if (!reader) return;
+
+      const decoder = new TextDecoder();
+      let text = "";
+
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "user",
+          content: message,
+        },
+      ]);
+
+      setMessage("");
+
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: text,
+        },
+      ]);
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        text += decoder.decode(value);
+        setChatMessages((prev) => [
+          ...prev.slice(0, -1),
+          {
+            role: "assistant",
+            content: text,
+          },
+        ]);
+      }
+    };
+
+    send();
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth", // atau "auto"
     });
-  }, [chatMessages]);
+  }, [message]);
 
   return (
     <div>
@@ -33,7 +90,7 @@ export function ChatProduct({ product }: ProductProps) {
         <CardContent>
           <ScrollArea className="flex flex-col h-64 md:h-87 bg-gray-50 rounded-2xl">
             <div className="flex flex-col gap-2 p-4">
-              <ReactMarkdown>{`Hello can i help you about ${product.name}`}</ReactMarkdown>
+              {/* <ReactMarkdown>{`Hello can i help you about ${product.name}`}</ReactMarkdown>
               <div className="flex justify-end">
                 <p className="bg-gray-200 rounded-full pl-4 pr-4">
                   Hello, what this product is good ?
@@ -57,7 +114,24 @@ export function ChatProduct({ product }: ProductProps) {
                 irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
                 pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
                 deserunt mollit anim id est laborum.
-              </ReactMarkdown>
+              </ReactMarkdown> */}
+
+              {chatMessages.length > 0 ? (
+                chatMessages.map((chat, idx) => (
+                  <div key={idx}>
+                    {chat.role === "user" ? (
+                      <div className="flex justify-end">
+                        <p className="bg-gray-200 rounded-full pl-4 pr-4">{chat.content}</p>
+                      </div>
+                    ) : (
+                      <ReactMarkdown>{chat.content}</ReactMarkdown>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <span></span>
+              )}
+
               <div ref={bottomRef} />
             </div>
           </ScrollArea>
@@ -65,11 +139,11 @@ export function ChatProduct({ product }: ProductProps) {
             <InputGroupTextarea
               className="h-12"
               placeholder="Ask about the product"
-              onChange={(e) => setChatMessage(e.target.value)}
+              onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  alert(chatMessages);
+                  handleChat();
                 }
               }}
             />

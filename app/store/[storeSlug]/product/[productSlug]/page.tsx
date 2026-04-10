@@ -27,7 +27,7 @@ export default async function StoreProductPage({ params }: StoreProductProps) {
   return (
     <div className="flex flex-col md:flex-row gap-4 items-center">
       <ProductDetail product={product} />
-      <ChatProduct product={product} />
+      <ChatProduct storeSlug={storeSlug} productSlug={productSlug} />
       {products && <OtherProducts storeSlug={storeSlug} products={products} />}
     </div>
   );
