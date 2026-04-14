@@ -19,8 +19,13 @@ export default async function StoreProductPage({ params }: StoreProductProps) {
   if (!data.data?.data) return <div>Product not found</div>;
   const product = data.data.data;
 
-  const query: string = `except_product_slug=${productSlug}&page=1&per_page=10&search=`;
-  const result = await GetProductCards(query);
+  const queryParams: Record<string, string> = {
+    except_product_slug: productSlug,
+    page: "1",
+    per_page: "10",
+    search: "",
+  };
+  const result = await GetProductCards(queryParams);
   if (!result.ok) return <div>{data.message}</div>;
   const products = result.data?.data;
 

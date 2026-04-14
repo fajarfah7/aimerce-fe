@@ -12,7 +12,7 @@ import { ArrowUpIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { ChatMessageRequest, ChatMessageResponse } from "@/app/api/product/chat/dto";
-import { SendChatMessage } from "@/app/api/product/chat/chat";
+import { GetChatMessage, SendChatMessage } from "@/app/api/product/chat/chat";
 
 type ProductProps = {
   storeSlug: string;
@@ -23,6 +23,14 @@ export function ChatProduct({ storeSlug, productSlug }: ProductProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessageResponse[]>([]);
   const [message, setMessage] = useState<string>("");
+
+  useEffect(() => {
+    const getChat = async () => {
+      const res = await GetChatMessage({ storeSlug, productSlug });
+      if (res.data) setChatMessages(res.data);
+    };
+    getChat();
+  }, [storeSlug, productSlug]);
 
   const handleChat = () => {
     const send = async () => {

@@ -67,16 +67,16 @@ export function extractError(e: unknown): ApiResponse<null> {
 export const api = {
   async get<TRes>(
     path: string,
-    queryParams?: string,
+    // queryParams?: string,
     bridgeApi?: string,
     token?: string,
   ): Promise<TRes> {
     const baseApi = bridgeApi ?? env.API_URL;
 
-    let url = path.startsWith("/") ? `${baseApi}${path}` : `${baseApi}/${path}`;
-    if (queryParams) {
-      url = `${url}?${queryParams}`;
-    }
+    const url = path.startsWith("/") ? `${baseApi}${path}` : `${baseApi}/${path}`;
+    // if (queryParams) {
+    //   url = `${url}?${queryParams}`;
+    // }
 
     const headers: HeadersInit = {};
     if (token) {
@@ -87,10 +87,8 @@ export const api = {
       method: "GET",
       headers,
     });
-    console.log("res ==>", res);
 
     const body = await res.json();
-    console.log("body ==>", body);
 
     if (!res.ok) {
       const message: string = body?.message ?? "unknown error occurred";

@@ -8,7 +8,6 @@ type OtherProductProps = {
 };
 
 export function OtherProducts({ storeSlug, products }: OtherProductProps) {
-  console.log("products ==>", products);
   return (
     <ScrollArea className="flex flex-col h-74 md:h-115 rounded-2xl w-full">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-4 h-full p-3">

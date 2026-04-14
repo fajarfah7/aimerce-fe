@@ -6,12 +6,25 @@ import { GetProductCards } from "../api/product/get/get-products";
 import { ProductCard as Product } from "../api/product/get/dto";
 
 export default function DashboardPage() {
-  const query: string = "page=1&per_page=10&search=";
+  // const query: string = "page=1&per_page=10&search=";
+  type QueryParams = Record<string, string>;
+  const [queryParams, setQueryParams] = useState<QueryParams>({
+    page: "1",
+    per_page: "10",
+    search: "",
+  });
+  // const queryParams: Record<string, string> = {
+  //   except_product_slug: productSlug,
+  //   page: "1",
+  //   per_page: "10",
+  //   search: "",
+  // };
+
   const [data, setData] = useState<Product[] | null>(null);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await GetProductCards(query);
+        const result = await GetProductCards(queryParams);
         if (!result.ok) {
           alert(result.message);
           return;
